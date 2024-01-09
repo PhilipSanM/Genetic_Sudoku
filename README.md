@@ -35,5 +35,5 @@ Aplication of GA, for solving sudoku game
 
 4. **Run the program**
    ```bash
-    python tu_programa.py
+    python main.py
    ```
