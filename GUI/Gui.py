@@ -1,7 +1,7 @@
 from tkinter import *
 from tkinter import ttk
 
-from GUI.Solutions.BackTracking import  BackTrackSolution
+from Solutions.BackTracking import  BackTrackSolution
 
 
 import random
