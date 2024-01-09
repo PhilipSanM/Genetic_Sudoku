@@ -4,6 +4,8 @@ class BackTrackSolution(object):
         :type board: List[List[str]]
         :rtype: None Do not return anything, modify board in-place instead.
         """
+
+        
         
         def isValid(x, y, value):
             return value not in rows[x] and value not in columns[y] and value not in squares[(auxiliar[x], auxiliar[y])]
@@ -63,4 +65,6 @@ class BackTrackSolution(object):
         
 
         backtracking()
+
+        return board
 
