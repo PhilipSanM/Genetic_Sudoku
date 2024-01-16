@@ -3,6 +3,7 @@ from tkinter import ttk
 
 from Solutions.BackTracking import  BackTrackSolution
 
+from Solutions.GA import GASolution
 
 import random
 import time
@@ -13,7 +14,9 @@ class Gui(Tk):
         super().__init__()
         
 
-        self.init_solution= [["5","3",".",".","7",".",".",".","."],["6",".",".","1","9","5",".",".","."],[".","9","8",".",".",".",".","6","."],["8",".",".",".","6",".",".",".","3"],["4",".",".","8",".","3",".",".","1"],["7",".",".",".","2",".",".",".","6"],[".","6",".",".",".",".","2","8","."],[".",".",".","4","1","9",".",".","5"],[".",".",".",".","8",".",".","7","9"]]
+        # self.init_solution= [["5","3",".",".","7",".",".",".","."],["6",".",".","1","9","5",".",".","."],[".","9","8",".",".",".",".","6","."],["8",".",".",".","6",".",".",".","3"],["4",".",".","8",".","3",".",".","1"],["7",".",".",".","2",".",".",".","6"],[".","6",".",".",".",".","2","8","."],[".",".",".","4","1","9",".",".","5"],[".",".",".",".","8",".",".","7","9"]]
+        
+        self.init_solution = [['5', '3', '.', '.', '7', '.', '.', '.', '.'],['6', '.', '.', '1', '9', '5', '.', '.', '.'],['.', '9', '8', '.', '.', '.', '.', '6', '.'],['8', '.', '.', '.', '6', '.', '.', '.', '3'],['4', '.', '.', '8', '.', '3', '.', '.', '1'],['7', '.', '.', '.', '2', '.', '.', '.', '6'],['.', '6', '.', '.', '.', '.', '2', '8', '.'],['.', '.', '.', '4', '1', '9', '.', '.', '5'],['.', '.', '.', '.', '8', '.', '.', '7', '9']]
         self.bactrack_solution = []
         self.ga_solution = []
     
@@ -113,12 +116,47 @@ class Gui(Tk):
 
     def solve_using_GA(self):
         seed = int(self.seed_entry.get())
+        random.seed(seed)
         population = int(self.population_entry.get())
         mutation_rate = float(self.mutation_entry.get())
         cross_rate = float(self.cross_entry.get())
         
         # TODO CAMARA EMI >;(
-        pass
+        
+        sudoku_mapped = self.map_sudoku_2_integers(self.init_solution.copy())
+        
+        ga_Solver = GASolution(sudoku_mapped)
+
+        start = time.time()
+        self.ga_board.delete('1.0', END)
+
+        self.ga_solution = ga_Solver.sudoku_ga()
+
+        self.print_board(self.ga_solution, self.ga_board)
+
+        end = time.time()
+
+        self.ga_board.insert(END, "\n")
+        self.ga_board.insert(END, f"Time taken: {round(end - start, 6)}s (Wall time)")
+
+
+
+    
+
+    def map_sudoku_2_integers(self, sudoku):
+        sudoku_board = []
+        for row in sudoku:
+            line = []
+            for value in row:
+                if value == '.':
+                    line.append(0)
+                else:
+                    line.append(int(value))
+            
+            sudoku_board.append(line)
+
+        return sudoku_board
+
 
     def generate_sudoku(self):
         self.init_board.delete('1.0', END)
