@@ -3,7 +3,7 @@ from tkinter import ttk
 
 from Solutions.BackTracking import  BackTrackSolution
 
-from Solutions.GA import GASolution
+from Solutions.GA import GeneticAlgorithm
 
 import random
 import time
@@ -112,7 +112,11 @@ class Gui(Tk):
         self.bactrack_board.insert(END, "\n")
         self.bactrack_board.insert(END, f"Time taken: {round(end - start, 6)}s (Wall time)")
         
+    def get_sudoku_matrix(self, cadena):
+        # Convertir la matriz de caracteres a una matriz de enteros
+        matriz_enteros = [[int(caracter) if caracter != '.' else 0 for caracter in fila] for fila in cadena]
 
+        return matriz_enteros
 
     def solve_using_GA(self):
         seed = int(self.seed_entry.get())
@@ -123,14 +127,16 @@ class Gui(Tk):
         
         # TODO CAMARA EMI >;(
         
-        sudoku_mapped = self.map_sudoku_2_integers(self.init_solution.copy())
+
         
-        ga_Solver = GASolution(sudoku_mapped)
+        ga_solver = GeneticAlgorithm()
 
         start = time.time()
         self.ga_board.delete('1.0', END)
 
-        self.ga_solution = ga_Solver.sudoku_ga()
+        board = self.get_sudoku_matrix(self.init_solution.copy())
+        
+        self.ga_solution = ga_solver.sudoku_ga(board, 100, 100,  0.2, 0.1, 0.3, 0.05) 
 
         self.print_board(self.ga_solution, self.ga_board)
 

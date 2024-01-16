@@ -1,155 +1,15 @@
 import random
 import numpy as np
 import copy
+import Solutions.Individuo as Individuo
 
-class Individuo(object):
-    def __init__(self, sudoku_puzzle):
-        self.size = 9
+class GeneticAlgorithm:
+    def __init__(self):
+        self.population = []
+        self.elitePopulation = []
+        # # ... other attributes
 
-        self.matrix = copy.deepcopy(sudoku_puzzle)
-        self.associatedMatrix = np.zeros((self.size,self.size),dtype=int)
-        #self.columnsRepeated = np.zeros((self.size,self.size),dtype=int)
-
-        self.values = [1,2,3,4,5,6,7,8,9]
-        self.givenNumbersIndexes = [] #Casillas que no pueden cambiar
-
-        self.subBlockSize = int(pow(self.size,0.5)) 
-        self.subBlockIndexes = [index*self.subBlockSize for index in range(self.subBlockSize)]
-
-    #Asigna numeros aleatorios a los espacios de la matriz
-    def initMatrix(self):
-        random.seed()
-        for r, row in enumerate(self.matrix):
-            self.setRow(row,r)
-    
-    #setRow
-    def setRow(self, row, r):
-        actualRow = set(row)
-        validNumbers = set(self.values)        
-        diference = list(validNumbers.difference(actualRow)) 
-        for c,casilla in enumerate(row):
-            if casilla == 0: 
-                number = random.choice(diference)
-                diference.remove(number)
-                self.matrix[r][c] = number
-            else:
-                self.associatedMatrix[r][c] = 1
-        
-    #Obtiene Subblock y sus asociadas
-    def getSubBlocks(self):
-        subblockSize = self.subBlockSize
-
-        subblockList = []
-        associatedSubblockList = []
-        repeatedValuesSubblockList = []
-        numerosRepetidos =[]
-
-        for i in range(self.size):
-            subblock = []            
-            associatedSubblock = []
-            repeatedSubblock = np.zeros((self.subBlockSize, self.subBlockSize))
-            #paraCalcularRepetidos
-            numeros = []
-            repetidos = []
-            #coordenadas
-            xInicio = self.subBlockIndexes[i%(subblockSize)]
-            xFin = xInicio + subblockSize
-            if i in self.subBlockIndexes:
-                yInicio = i
-                yFin = yInicio + subblockSize
-            #Slice a la matriz
-            for r,row in enumerate(self.matrix[yInicio:yFin]):
-                subblock.append(row[xInicio:xFin])
-                associatedSubblock.append((self.associatedMatrix[r])[xInicio:xFin])
-                for c,col in enumerate(row[xInicio:xFin]):
-                    if col not in numeros:
-                        numeros.append(col)
-                    else:
-                        if col not in repetidos:
-                            repetidos.append(col)
-            #Actualiza repetidos
-            for r,row in enumerate(subblock):
-                for c,col in enumerate(row):
-                    if col in repetidos:
-                        repeatedSubblock[r][c] = 1
-            numerosRepetidos.append(repetidos)
-            repeatedValuesSubblockList.append(repeatedSubblock)
-            associatedSubblockList.append(associatedSubblock)
-            subblockList.append(subblock)
-
-        return subblockList, associatedSubblockList, repeatedValuesSubblockList,numerosRepetidos
-    
-    #Funcion objetivo (optimo = 0)
-    def fitnessFunction(self): 
-        colCountRule = 0
-        rowCounter = 0
-        for i in range(self.size): 
-            #Suma para col
-            col = [fila[i] for fila in self.matrix]
-            if len(col) != len(set(col)):
-                colCountRule += 1
-            #Suma para subblock
-            subblocks,_,_,_ = self.getSubBlocks()
-            for subblock in subblocks:
-                for j in range(self.subBlockSize):
-                    colS = [fila[j] for fila in subblock]
-                    if len(colS) != len(set(colS)):
-                        colCountRule += 1
-        return colCountRule
-    
-    #Calcula la matriz repeatedColums
-    def getRepeatedColumns(self):
-        columnsRepeated = np.zeros((self.size,self.size),dtype=int)
-        listOfRepeated = []
-        for i in range(self.size):
-            column = [row[i] for row in self.matrix]
-            numeros = []
-            repetidos = []
-            for row in column:
-                if row not in numeros:
-                    numeros.append(row)
-                else:
-                    repetidos.append(row)
-            for r,row in enumerate(column):
-                if row in repetidos:
-                    columnsRepeated[i][r] = 1
-            listOfRepeated.append(repetidos)
-        return columnsRepeated, listOfRepeated
-    
-    #Actualiza las matrices con subblocks
-    def updateMatrix(self, subblocks):
-        sbSize = self.subBlockSize
-        for i,sub in enumerate(subblocks):
-            xinicio = self.subBlockIndexes[i%(sbSize)]
-            xfin = xinicio + sbSize-1
-            if i in self.subBlockIndexes:
-                yInicio = i
-                yFin = yInicio + sbSize -1
-            for r,row in enumerate(self.matrix):
-                for c,col in enumerate(row):
-                    if r >= yInicio and r <= yFin:
-                        if c >= xinicio and c<= xfin:
-                            self.matrix[r][c]=sub[r%sbSize][c%sbSize]
-
-    #Imprime sudoku
-    def showPuzzle(self,option):
-        if option == 0:
-            board = self.matrix
-        elif option == 1:
-            board = self.associatedMatrix
-
-        print_sudoku(board)
-
-
-
-class GASolution(object):
-    def __init__(self, sudoku_puzzle):
-        self.sudoku_puzzle = sudoku_puzzle
-
-    
-
-
-    def crossOver(self,pc1,pc2,population):
+    def crossOver(self, pc1,pc2,population):
         #nuevaPoblacion = []
         for _ in range(len(population)//2):
             p1,p2 = random.sample(population,2)
@@ -175,45 +35,42 @@ class GASolution(object):
             #nuevaPoblacion.append(offspring2)
                     
         #return nuevaPoblacion
-    def indexAvailableToSwap(self, rowAsociada):
-        
+
+    def indexAvailableToSwap(self, rowAsociada):    
         index = []
         for c,col in enumerate(rowAsociada):
             if col != 1:
                 index.append(c)
-        
-        print(index)
-        print("aaa")
-        print(rowAsociada)
-        index1,index2 = random.sample(index, 2)
-        return index1,index2
+        if len(index) >= 2:
+            index1,index2 = random.sample(index, 2)
+            return index1,index2
+        else: return None, None
     
-
-    def mutation(self, pm1, pm2,population):
+    def mutation(self, pm1, pm2, population):
         for individuo in population:
             matrix = individuo.matrix
             matrixAsociada = individuo.associatedMatrix
-            #print(matrixAsociada)
+
             for r,row in enumerate(matrix):
                 rowAsociada = matrixAsociada[r]
                 rand1 = random.uniform(0,1)
                 rand2 = random.uniform(0,1)
                 if rand1 < pm1:
                     idx1,idx2 = self.indexAvailableToSwap(rowAsociada)
-                    temp = matrix[r][idx1]
-                    matrix[r][idx1] = matrix[r][idx2]
-                    matrix[r][idx2] = temp
+                    if idx1!=None and idx2!=None:
+                        temp = matrix[r][idx1]
+                        matrix[r][idx1] = matrix[r][idx2]
+                        matrix[r][idx2] = temp
                 if rand2 < pm2:
                     for c,col in enumerate(rowAsociada):
                         if col == 0:
                             matrix[r][c] = 0          
                     individuo.setRow(matrix[r],r)
+                    
     def actualiza_columna(self, matriz, nueva_columna, indice_columna):
         for i in range(len(matriz)):
             matriz[i][indice_columna] = nueva_columna[i]
         return matriz
-
-
 
     def columnLocalSarch(self, population):
         for individuo in population:
@@ -309,8 +166,7 @@ class GASolution(object):
             #print("\n\n\n")
 
     #Checa si los numeros existen en ambos subblocks
-    def checkNumbersInBothSubblocksNowFast(self, n1,n2,sub1,sub2,size):
-
+    def checkNumbersInBothSubblocksNowFast(self, n1, n2, sub1, sub2, size):
         f1 = False
         f2 = False
         for r in range(size):
@@ -325,10 +181,11 @@ class GASolution(object):
         else:
             return True
 
-
     def subblockLocalSearch(self, population):
+        subblock_mal = []
+
         for individuo in population:
-            subblockList, associatedSubblockList, repeatedValuesSubblockList,valoresRepetidos = copy.deepcopy(individuo.getSubBlocks())
+            subblockList, associatedSubblockList, repeatedValuesSubblockList,valoresRepetidos = copy.deepcopy(individuo.getSubBlocks_wrong())
             #print(f"Individuo antes:")
             #individuo.showPuzzle(0)
             newSubblocks = []
@@ -378,7 +235,7 @@ class GASolution(object):
             #print(f"Individuo despues:")
             #individuo.showPuzzle(0)
             #print(f"\n\n")
-
+             
     def elitePopulationLearning(self, population, elitePopulation):
         elites = copy.deepcopy(elitePopulation)
         xrandom = random.choice(elites)
@@ -398,7 +255,6 @@ class GASolution(object):
             population[-1] = nuevoIndividuo
             #print("nuevoIndividuo")
 
-
     def sortPopulation(self, population):
         fitnessEv = []
         for individuo in population:
@@ -406,18 +262,19 @@ class GASolution(object):
             fitnessEv.append([individuo, fitness])
         fitnessEv.sort(key=lambda x: x[1], reverse=False)
         return [individuo for individuo, _ in fitnessEv]
+    
+    def sudoku_ga(self, board, populationSize, generaciones, pc1, pc2, pm1, pm2):
+        population = self.population
+        elitePopulation = self.elitePopulation
+        val = 1000
 
-    def sudoku_ga(self, populationSize= 20, generaciones = 1000, pc1 = 0.1, pc2 = 0.1, pm1 = 0.1, pm2 = 0.1):
-        population = []
         for _ in range(populationSize):
-            instance = Individuo(self.sudoku_puzzle)
+            instance = Individuo.Individuo(board)
             instance.initMatrix()
             population.append(instance)
 
-        elitePopulation = []
-        val = 1000
         for i in range(generaciones):
-            #print(f"===GENERACION {i}===")
+            # print(f"===GENERACION {i}===")
 
             population=self.sortPopulation(population)
 
@@ -438,7 +295,6 @@ class GASolution(object):
             self.columnLocalSarch(population)
 
             self.subblockLocalSearch(population)
-            
 
             population = self.sortPopulation(population)
 
@@ -453,7 +309,7 @@ class GASolution(object):
             #mostrarAptitudPoblacion(population,"Despues de actualizar learning")
 
             Gbest = elitePopulation[-1]
-            #print(f"Best {Gbest.fitnessFunction()}")
+            # print(f"Best {Gbest.fitnessFunction()}")
             if Gbest.fitnessFunction() == 0: 
                 val = i
                 break
@@ -462,30 +318,31 @@ class GASolution(object):
         Gbest.showPuzzle(0)
 
             
-        return elitePopulation[-1].fitnessFunction(), val, elitePopulation[-1].matrix
+        #return elitePopulation[-1].fitnessFunction(), val 
+        return Gbest.matrix
 
-        
-
-    def updateElitePopulation(self, elitePopulation, indvElite):
+    def updateElitePopulation(self,elitePopulation, indvElite):
         if all(indvElite.fitnessFunction() < elite.fitnessFunction() for elite in elitePopulation):
             elitePopulation.append(indvElite)
             if len(elitePopulation)>=50:
                 elitePopulation.pop(0)
 
-    def mostrarPuzzles(self, population,str=''):
+    def mostrarPuzzles(self,population,str=''):
         print(f"Fitness poblacion {str}")
         for p in population:
             p.showPuzzle(0)
         print("\n")
 
-    def mostrarAptitudPoblacion(self, population,str=''):
+    def mostrarAptitudPoblacion(self,population,str=''):
         print(f"Fitness poblacion {str}")
         for p in population:
             print(f"{p.fitnessFunction()}", end='  ')
         print("\n")
-    def mostrarDirecciones(self, population,str=''):
+
+    def mostrarDirecciones(self,population,str=''):
         print(f"Direccion {str}")
         for p in population:
             print(f"{id(p)}", end='  ')
         print("\n")
+
 
