@@ -136,7 +136,7 @@ class Gui(Tk):
 
         board = self.get_sudoku_matrix(self.init_solution.copy())
         
-        self.ga_solution = ga_solver.sudoku_ga(board, 100, 100,  0.2, 0.1, 0.3, 0.05) 
+        self.ga_solution = ga_solver.sudoku_ga(board, 100, 1000,  0.2, 0.1, 0.3, 0.05) 
 
         self.print_board(self.ga_solution, self.ga_board)
 
