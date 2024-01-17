@@ -1,0 +1,61 @@
+        
+    #Obtiene Subblock y sus asociadas
+    def getSubBlocks(self):
+        subblockSize = self.subBlockSize
+
+        subblockList = []
+        associatedSubblockList = []
+        repeatedValuesSubblockList = []
+        numerosRepetidos =[]
+
+        
+       
+        for i in range(self.size):
+            #print(f"Obteniendo subblock {i}")
+            subblock = []            
+            associatedSubblock = []
+            repeatedSubblock = np.zeros((self.subBlockSize, self.subBlockSize))
+            #paraCalcularRepetidos
+            numeros = []
+            repetidos = []
+            #coordenadas
+            xInicio = self.subBlockIndexes[i%(subblockSize)]
+            
+            xFin = xInicio + subblockSize
+            #print(f"X: {xInicio}, {xFin}")
+            if i in self.subBlockIndexes:
+                yInicio = i
+                yFin = yInicio + subblockSize
+            #print(f"Y: {yInicio}, {yFin}")
+
+
+            for r,row in enumerate(self.matrix[yInicio:yFin]):
+                #print(f"Estamos en la fila {row}")
+
+
+
+                subblock.append(row[xInicio:xFin])
+                
+                rowww = copy.deepcopy((self.associatedMatrix[r])[xInicio:xFin])
+                associatedSubblock.append(rowww)
+                
+                for c,col in enumerate(row[xInicio:xFin]):
+                    if col not in numeros:
+                        numeros.append(col)
+                    else:
+                        if col not in repetidos:
+                            repetidos.append(col)
+                    
+            #Actualiza repetidos
+            for r,row in enumerate(subblock):
+                for c,col in enumerate(row):
+                    if col in repetidos:
+                        repeatedSubblock[r][c] = 1
+            numerosRepetidos.append(repetidos)
+            repeatedValuesSubblockList.append(repeatedSubblock)
+            #associatedSubblockList.append(copy.deepcopy(associatedSubblock))
+            subblockList.append(subblock)
+
+ 
+        return subblockList, associatedSubblockList, repeatedValuesSubblockList,numerosRepetidos
+    
