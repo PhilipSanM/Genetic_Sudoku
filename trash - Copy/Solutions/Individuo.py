@@ -2,43 +2,40 @@ import random
 import numpy as np
 import copy
 
-
-#CADA POSIBLE SOLUCIÓN
 class Individuo:
     def __init__(self, sudoku_puzzle):
-        self.size = 9 #Tamaño del tablero
+        self.size = 9
 
-        self.matrix = copy.deepcopy(sudoku_puzzle) 
-        self.associatedMatrix = np.zeros((self.size,self.size),dtype=int) #Matriz Binaria de números dados
-        
-        self.values = [1,2,3,4,5,6,7,8,9] #Posibles valores a tomar
+        self.matrix = copy.deepcopy(sudoku_puzzle)
+        self.associatedMatrix = np.zeros((self.size,self.size),dtype=int)
+        #self.columnsRepeated = np.zeros((self.size,self.size),dtype=int)
 
-        self.subBlockSize = int(pow(self.size,0.5))  #Tamaño de cada subbbloc
-        self.subBlockIndexes = [index*self.subBlockSize for index in range(self.subBlockSize)] #Indices de subblock
+        self.values = [1,2,3,4,5,6,7,8,9]
+        self.givenNumbersIndexes = [] #Casillas que no pueden cambiar
 
-    #INIT MATRIX: Asigna numeros aleatorios a los espacios de la matriz
+        self.subBlockSize = int(pow(self.size,0.5)) 
+        self.subBlockIndexes = [index*self.subBlockSize for index in range(self.subBlockSize)]
+
+    #Asigna numeros aleatorios a los espacios de la matriz
     def initMatrix(self):
         random.seed()
         for r, row in enumerate(self.matrix):
             self.setRow(row,r)
-
-
-    #Inicializa filas y llena matriz asociada
+    
+    #setRow
     def setRow(self, row, r):
         actualRow = set(row)
         validNumbers = set(self.values)        
         diference = list(validNumbers.difference(actualRow)) 
-
         for c,casilla in enumerate(row):
             if casilla == 0: 
                 number = random.choice(diference)
                 diference.remove(number)
                 self.matrix[r][c] = number
-            elif casilla!=0:
+            else:
                 self.associatedMatrix[r][c] = 1
-
-
-    #Obtiene subblocks y sus subblocks asociados
+        
+    #Obtiene Subblock y sus asociadas
     def getSubBlocks(self):
         subblockSize = self.subBlockSize
 
@@ -46,125 +43,89 @@ class Individuo:
         associatedSubblockList = []
         repeatedValuesSubblockList = []
         numerosRepetidos =[]
-       
+
         for i in range(self.size):
             subblock = []            
+            associatedSubblock = []
             repeatedSubblock = np.zeros((self.subBlockSize, self.subBlockSize))
-
+            #paraCalcularRepetidos
             numeros = []
             repetidos = []
-        
-            xInicio = self.subBlockIndexes[i%(subblockSize)]  
+            #coordenadas
+            xInicio = self.subBlockIndexes[i%(subblockSize)]
             xFin = xInicio + subblockSize
-
             if i in self.subBlockIndexes:
                 yInicio = i
                 yFin = yInicio + subblockSize
-
-            #Extrae repetidos de cada subblock
+            #Slice a la matriz
             for r,row in enumerate(self.matrix[yInicio:yFin]):
                 subblock.append(row[xInicio:xFin])
+                associatedSubblock.append((self.associatedMatrix[r])[xInicio:xFin])
                 for c,col in enumerate(row[xInicio:xFin]):
                     if col not in numeros:
                         numeros.append(col)
                     else:
                         if col not in repetidos:
                             repetidos.append(col)
-
-            #Asigna valores a la matriz de repetidos
+            #Actualiza repetidos
             for r,row in enumerate(subblock):
                 for c,col in enumerate(row):
                     if col in repetidos:
                         repeatedSubblock[r][c] = 1
             numerosRepetidos.append(repetidos)
             repeatedValuesSubblockList.append(repeatedSubblock)
+            associatedSubblockList.append(associatedSubblock)
             subblockList.append(subblock)
 
-        #Obtiene los subblocks asociados
-        associatedSubblockList = self.getAssociatedSubblock(self.associatedMatrix)
+        return subblockList, associatedSubblockList, repeatedValuesSubblockList,numerosRepetidos
+    
+    def getSubBlocks_wrong(self):
+        subblockSize = self.subBlockSize
+
+        subblockList = []
+        associatedSubblockList = []
+        repeatedValuesSubblockList = []
+        numerosRepetidos =[]
+
+        for i in range(self.size):
+            mal = False
+            subblock = []            
+            associatedSubblock = []
+            repeatedSubblock = np.zeros((self.subBlockSize, self.subBlockSize))
+            #paraCalcularRepetidos
+            numeros = []
+            repetidos = []
+            #coordenadas
+            xInicio = self.subBlockIndexes[i%(subblockSize)]
+            xFin = xInicio + subblockSize
+            if i in self.subBlockIndexes:
+                yInicio = i
+                yFin = yInicio + subblockSize
+            #Slice a la matriz
+            for r,row in enumerate(self.matrix[yInicio:yFin]):
+                subblock.append(row[xInicio:xFin])
+                associatedSubblock.append((self.associatedMatrix[r])[xInicio:xFin])
+                for c,col in enumerate(row[xInicio:xFin]):
+                    if col not in numeros:
+                        numeros.append(col)
+                    else:
+                        if col not in repetidos:
+                            repetidos.append(col)
+            #Actualiza repetidos
+            for r,row in enumerate(subblock):
+                for c,col in enumerate(row):
+                    if col in repetidos:
+                        repeatedSubblock[r][c] = 1
+                        mal = True
+                    
+            if mal:
+                numerosRepetidos.append(repetidos)
+                repeatedValuesSubblockList.append(repeatedSubblock)
+                associatedSubblockList.append(associatedSubblock)
+                subblockList.append(subblock)
 
         return subblockList, associatedSubblockList, repeatedValuesSubblockList,numerosRepetidos
-
-
-    #Obtiene los subblock asociados (listas binarias de posiciones que no pueden cambiar)
-    def getAssociatedSubblock(self, board):
-        repetedList = []
-        values = []
-        for row in range(3):
-            r = []
-            for col in range(3):
-                r.append(board[row][col])
-            values.append(r)
-        repetedList.append(values)
-
-        values = []
-        for row in range(3):
-            r = []
-            for col in range(3, 6):
-                r.append(board[row][col])
-            values.append(r)
-        repetedList.append(values)
-
-        values = []
-        for row in range(3):
-            r = []
-            for col in range(6, 9):
-                r.append(board[row][col])
-            values.append(r)
-        repetedList.append(values)
-
-        values = []
-        for row in range(3, 6):
-            r = []
-            for col in range(3):
-                r.append(board[row][col])
-            values.append(r)
-        repetedList.append(values)
-
-        values = []
-        for row in range(3, 6):
-            r = []
-            for col in range(3, 6):
-                r.append(board[row][col])
-            values.append(r)
-        repetedList.append(values)
-
-        values = []
-        for row in range(3, 6):
-            r = []
-            for col in range(6, 9):
-                r.append(board[row][col])
-            values.append(r)
-        repetedList.append(values)
-
-        values = []
-        for row in range(6, 9):
-            r = []
-            for col in range(3):
-                r.append(board[row][col])
-            values.append(r)
-        repetedList.append(values)
-
-        values = []
-        for row in range(6, 9):
-            r = []
-            for col in range(3, 6):
-                r.append(board[row][col])
-            values.append(r)
-        repetedList.append(values)
-
-        values = []
-        for row in range(6, 9):
-            r = []
-            for col in range(6, 9):
-                r.append(board[row][col])
-            values.append(r)
-        repetedList.append(values)
-
-        return repetedList
-
-
-    #Muestra en formato sudoku la matriz
+    
     def print_sudoku(self, board):
         for i in range(9):
             if i % 3 == 0 and i != 0:
@@ -176,9 +137,7 @@ class Individuo:
             print()
         print("\n")
 
-
-    #Funcion objetivo 
-    #Función con la suma de columas - subbloques ilegales. Función a minimizar
+    #Funcion objetivo (optimo = 0)
     def fitnessFunction(self): 
         colCountRule = 0
         rowCounter = 0
@@ -196,7 +155,6 @@ class Individuo:
                         colCountRule += 1
         return colCountRule
     
-
     #Calcula la matriz repeatedColums
     def getRepeatedColumns(self):
         columnsRepeated = np.zeros((self.size,self.size),dtype=int)
@@ -216,7 +174,6 @@ class Individuo:
             listOfRepeated.append(repetidos)
         return columnsRepeated, listOfRepeated
     
-
     #Actualiza las matrices con subblocks
     def updateMatrix(self, subblocks):
         sbSize = self.subBlockSize
@@ -232,12 +189,12 @@ class Individuo:
                         if c >= xinicio and c<= xfin:
                             self.matrix[r][c]=sub[r%sbSize][c%sbSize]
 
-
-    #Imprime sudoku                        
+    #Imprime sudoku                       
     def showPuzzle(self,option):
         if option == 0:
             board = self.matrix
         elif option == 1:
             board = self.associatedMatrix
+
         self.print_sudoku(board)
 

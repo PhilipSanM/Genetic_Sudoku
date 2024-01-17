@@ -1,13 +1,27 @@
+# ===================================================================
+# ===================== Genetic Sudoku Solver =======================
+# ===================================================================
+# repository: https://github.com/PhilipSanM/Genetic_Sudoku
+
+
 from tkinter import *
 from tkinter import ttk
 import time
 import random
+import copy
 from Solutions.BackTracking import  BackTrackSolution
 from Solutions.GA_copy import GeneticAlgorithm
 
 
+
+# Clase GUI, encargada de la interfaz gráfica
 class Gui(Tk):
+
     def __init__(self):
+        '''
+        Constructor de la clase GUI
+        Con parametros de inicializacion de la ventana, y los widgets
+        '''
         super().__init__()
         
         self.init_solution = [['5', '3', '.', '.', '7', '.', '.', '.', '.'],['6', '.', '.', '1', '9', '5', '.', '.', '.'],['.', '9', '8', '.', '.', '.', '.', '6', '.'],['8', '.', '.', '.', '6', '.', '.', '.', '3'],['4', '.', '.', '8', '.', '3', '.', '.', '1'],['7', '.', '.', '.', '2', '.', '.', '.', '6'],['.', '6', '.', '.', '.', '.', '2', '8', '.'],['.', '.', '.', '4', '1', '9', '.', '.', '5'],['.', '.', '.', '.', '8', '.', '.', '7', '9']]
@@ -17,6 +31,9 @@ class Gui(Tk):
         self.title("Genetic Sudoku ;)")
         self.geometry("1500x500")
 
+
+        # Widgets de la GUI:
+        
         self.welcome_label = Label(self, text="This a Genetic Sudoku Solver, using GA or a Backtracking approach")
         self.welcome_label.grid(row=0, column=3, pady=5, padx=5)
 
@@ -38,6 +55,12 @@ class Gui(Tk):
         self.population_label.grid(row=2, column=3, pady=5, padx=5)
         self.population_entry = Entry(self)
         self.population_entry.grid(row=2, column=4, pady=5, padx=1)
+
+
+        self.iterations_label = Label(self, text="Max Generations: ")
+        self.iterations_label.grid(row=3, column=3, pady=5, padx=5)
+        self.iterations_entry = Entry(self)
+        self.iterations_entry.grid(row=3, column=4, pady=5, padx=1)
 
         self.mutation_label_1 = Label(self, text="Mutation Rate 1: ")
         self.mutation_label_1.grid(row=2, column=7, pady=5, padx=5)
@@ -86,6 +109,10 @@ class Gui(Tk):
         self.print_board(self.init_solution, self.init_board)
 
     def solve_using_backtracking(self):
+        '''
+        Función que se encarga de resolver el sudoku usando backtracking, llamando a la clase backtracking, que contiene la solucion
+        al sudoku usando backtracking
+        '''
 
         start = time.time()
 
@@ -93,7 +120,7 @@ class Gui(Tk):
 
         backtr_solver = BackTrackSolution()
 
-        board = list(map(list, self.init_solution))
+        board = copy.deepcopy(self.init_solution)
 
         self.bactrack_solution = backtr_solver.solveSudoku(board)
 
@@ -106,18 +133,26 @@ class Gui(Tk):
         self.bactrack_board.insert(END, f"Time taken: {round(end - start, 6)}s (Wall time)")
         
     def get_sudoku_matrix(self, cadena):
+        '''
+        Función que se encarga de convertir la matriz de caracteres a una matriz de enteros, la mapea
+        '''
+
         # Convertir la matriz de caracteres a una matriz de enteros
         matriz_enteros = [[int(caracter) if caracter != '.' else 0 for caracter in fila] for fila in cadena]
 
         return matriz_enteros
 
     def solve_using_GA(self):
+        '''
+        Boton que se encarga de resolver el sudoku usando GA, llamando a la clase GA, que contiene la solucion
+        '''
+
         #seed = int(self.seed_entry.get())
         #random.seed(seed)
         if self.population_entry.get():
             population = int(self.population_entry.get())
         else:
-            population = 100
+            population = 20
         
         if self.cross_entry_1.get():
             pc1 = float(self.cross_entry_1.get())
@@ -139,23 +174,29 @@ class Gui(Tk):
         else:
             pm2 = 0.05
 
+        if self.iterations_entry.get():
+            iterations = int(self.iterations_entry.get())
+        else:
+            iterations = 500
+
         ga_solver = GeneticAlgorithm()
         start = time.time()
         self.ga_board.delete('1.0', END)
 
 
-        board = list(map(list, self.init_solution))
+        board = copy.deepcopy(self.init_solution)
 
         board = self.get_sudoku_matrix(board)
 
         
         #self.ga_solution = ga_solver.sudoku_ga(board, 100, 1000,  0.2, 0.1, 0.3, 0.05) 
         # self.ga_solution, iterations, solutions = ga_solver.sudoku_ga(board, population, 500,  pc1, pc2, pm1, pm2) 
-        self.ga_solution, solutions, val = ga_solver.sudoku_ga(board, population, 1000,  pc1, pc2, pm1, pm2) 
+        self.ga_solution, solutions, val = ga_solver.sudoku_ga(board, population, iterations ,pc1, pc2, pm1, pm2) 
 
         self.print_board(self.ga_solution, self.ga_board)
 
         end = time.time()
+
         self.ga_board.insert(END, "\n")
         self.ga_board.insert(END, f"Time taken: {round(end - start, 6)}s (Wall time), Total iterations: {val}")
         self.ga_board.insert(END, "\n")
@@ -166,13 +207,16 @@ class Gui(Tk):
 
         self.ga_board.insert(END, "\n")
 
-        # for i in range(len(solutions)):
-        #     self.ga_board.insert(END, f"Solution {i + 1}: \n")
-        #     self.print_board(solutions[i], self.ga_board)
-        #     self.ga_board.insert(END, "\n")
+        #for i in range(len(solutions)):
+        #    self.ga_board.insert(END, f"Solution {i + 1}: \n")
+        #    self.print_board(solutions[i], self.ga_board)
+        #    self.ga_board.insert(END, "\n")
         
 
     def map_sudoku_2_integers(self, sudoku):
+        '''
+        Segunda función que se encarga de convertir la matriz de caracteres a una matriz de enteros, la mapea
+        '''
         sudoku_board = []
         for row in sudoku:
             line = []
@@ -205,6 +249,10 @@ class Gui(Tk):
         self.print_board(self.init_solution, self.init_board) 
 
     def print_board(self, solution, board):
+        '''
+        Función que se encarga de imprimir el tablero en la interfaz gráfica, con colores para las celdas, y separaciones.
+        '''
+
         aux = [0,0,0, 1,1,1,2,2,2]
 
         for i, row in enumerate(solution):
@@ -239,7 +287,15 @@ class Gui(Tk):
                 board.insert(END, "-----------------------------\n")
 
     def generate_sudoku_board(self, num_empty_cells):
+        '''
+        Funcion para generar un tablero de sudoku aleatorio, de acuerdo a la dificultad seleccionada.
+        '''
+
         def is_valid_move(board, row, col, num):
+            ''''
+            Función que verifica si es válido colocar un número en una posición del tablero
+            '''
+
             # Verificar si es válido colocar 'num' en la posición (row, col) del tablero
             for i in range(9):
                 if board[row][i] == num or board[i][col] == num or board[3 * (row // 3) + i // 3][3 * (col // 3) + i % 3] == num:
