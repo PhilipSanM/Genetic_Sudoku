@@ -1,3 +1,9 @@
+# ===================================================================
+# ===================== Genetic Sudoku Solver =======================
+# ===================================================================
+# repository: https://github.com/PhilipSanM/Genetic_Sudoku
+
+
 class BackTrackSolution(object):
     def solveSudoku(self, board):
         """
@@ -8,11 +14,19 @@ class BackTrackSolution(object):
         
         
         def isValid(x, y, value):
+            '''
+            Esta funcion verifica si el valor que se quiere poner en la posicion x, y es valido, dentro de la fila, columna y cuadrado
+
+            '''
             return value not in rows[x] and value not in columns[y] and value not in squares[(auxiliar[x], auxiliar[y])]
 
 
         # Backtracking approach
         def backtracking(row = 0, column = 0):
+            ''''
+            Esta solucion es recursiva buscando la solucion del sudoku, se va a la siguiente columna si la actual esta llena, y a la siguiente fila si la columna actual esta llena
+            y determinista
+            '''
             if row >= 9:
                 return True
             elif column == 9:

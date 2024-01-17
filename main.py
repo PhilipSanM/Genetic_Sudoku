@@ -3,10 +3,16 @@ import argparse
 from GUI.Gui import Gui
 
 def main(args):
+
+    ''''
+    Funcion Main del programa, solo lanzamos la GUI
+    '''
     gui = Gui()
     gui.mainloop()
 
 
+
+# ARGS para mandarlo como SCRIPT
 
 def parse_args():
     # setup arg parser
