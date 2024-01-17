@@ -1,0 +1,35 @@
+  for i in range(self.size):
+            subblock = []            
+            associatedSubblock = []
+            repeatedSubblock = np.zeros((self.subBlockSize, self.subBlockSize))
+            #paraCalcularRepetidos
+            numeros = []
+            repetidos = []
+            #coordenadas
+            xInicio = self.subBlockIndexes[i%(subblockSize)]
+            xFin = xInicio + subblockSize
+            if i in self.subBlockIndexes:
+                yInicio = i
+                yFin = yInicio + subblockSize
+            #Slice a la matriz
+            #print(f"Estamos en el subblock {i}\n")
+            for r,row in enumerate(self.matrix[yInicio:yFin]):
+                subblock.append(row[xInicio:xFin])
+                
+                associatedSubblock.append(copy.deepcopy((self.associatedMatrix[r])[xInicio:xFin]))
+                for c,col in enumerate(row[xInicio:xFin]):
+                    if col not in numeros:
+                        numeros.append(col)
+                    else:
+                        if col not in repetidos:
+                            repetidos.append(col)
+                    
+            #Actualiza repetidos
+            for r,row in enumerate(subblock):
+                for c,col in enumerate(row):
+                    if col in repetidos:
+                        repeatedSubblock[r][c] = 1
+            numerosRepetidos.append(repetidos)
+            repeatedValuesSubblockList.append(repeatedSubblock)
+            associatedSubblockList.append(associatedSubblock)
+            subblockList.append(subblock)
