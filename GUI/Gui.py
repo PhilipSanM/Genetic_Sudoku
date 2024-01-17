@@ -152,7 +152,7 @@ class Gui(Tk):
         if self.population_entry.get():
             population = int(self.population_entry.get())
         else:
-            population = 2
+            population = 20
         
         if self.cross_entry_1.get():
             pc1 = float(self.cross_entry_1.get())
@@ -191,7 +191,7 @@ class Gui(Tk):
         
         #self.ga_solution = ga_solver.sudoku_ga(board, 100, 1000,  0.2, 0.1, 0.3, 0.05) 
         # self.ga_solution, iterations, solutions = ga_solver.sudoku_ga(board, population, 500,  pc1, pc2, pm1, pm2) 
-        self.ga_solution, solutions, val = ga_solver.sudoku_ga(board, population, iterations,  pc1, pc2, pm1, pm2) 
+        self.ga_solution, solutions, val = ga_solver.sudoku_ga(board, population, iterations ,pc1, pc2, pm1, pm2) 
 
         self.print_board(self.ga_solution, self.ga_board)
 
