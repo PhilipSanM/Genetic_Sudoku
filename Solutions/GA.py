@@ -205,8 +205,12 @@ class GeneticAlgorithm:
                         for r,row in enumerate(subblock):
                             actualRow = subblock[r]
                             actualRowAlterno = subblockAlterno[r]
+
+
                             prohibidos = associatedSubblockList[index][r]
                             prohibidosAlterno = associatedSubblockList[indiceSBA][r]
+
+
                             repetidos = repeatedValuesSubblockList[index][r]
                             repetidosAlterno = repeatedValuesSubblockList[indiceSBA][r]
                             #print(f"comparando {actualRow} con {actualRowAlterno}")
@@ -294,7 +298,7 @@ class GeneticAlgorithm:
 
             self.columnLocalSarch(population)
 
-            self.subblockLocalSearch(population)
+            # self.subblockLocalSearch(population)
 
             population = self.sortPopulation(population)
 
